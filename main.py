@@ -64,7 +64,7 @@ if not os.path.exists(os.path.join(directory_path, 'novaSetup.txt')):
     fm.write(model_name)
     fm.close()
 mod = open('novaSetup.txt','r')
-model_name = fm.read()
+model_name = mod.read()
 mod.close()
 clearConsole()
 print('Initialising GPT-2, this could take some time...')
