@@ -5,7 +5,9 @@ Nova is an AI powered chatbot that runs on GPT-2. Nova runs locally on your comp
 
 2. Click the run button next to the text that says '6 cells hidden' (this code is hidden because it takes up a large section of the page)
 
-3. After it's finished, click the run button next to the code that says "novaMain()"
+3. Once setup is complete, press the run button underneath the text that reads 'Get User Info'. This is info for the chatbot to enhance your experience.
+
+4. After it's finished, click the run button next to the code that says "novaMain()"
 
 ### How to install on your local machine
 1. **Install miniconda**
