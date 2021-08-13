@@ -3,7 +3,7 @@ Nova is an AI powered chatbot that runs on GPT-2. Nova runs locally on your comp
 ### How to run on Google Colabatory (recommended)
 1. Go to [this link](https://colab.research.google.com/drive/1PFIN-raNql7RnE5ZyHde15EttQj4TEmr?usp=sharing)
 
-2. Click the run button next to the text that says '8 cells hidden' (this code is hidden because it takes up a large section of the page)
+2. Click the run button next to the text that says '6 cells hidden' (this code is hidden because it takes up a large section of the page)
 
 3. After it's finished, click the run button next to the code that says "novaMain()"
 
