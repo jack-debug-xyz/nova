@@ -10,8 +10,29 @@ except:
         print('You are running on a newer version of tensorflow. For this script to work, you must be running on tensorflow version 1.15.2. Please install this tensorflow version before running this program again.\n\nTIP: You will need to build tensorflow 1.15.2 from source to use it.')
         quit()
     else:
-        print('You are missing a dependency, please run "pip install gpt_2_simple" to install the required dependency.')
-        quit()
+        inss = input('You are missing a required dependency. Would you like to install it now? (y/n): ')
+        if inss.lower() == 'y':
+            os.system('pip install gpt_2_simple')
+            try:
+                import gpt_2_simple as gpt2
+            except:
+                print('You are running on a newer version of tensorflow. For this script to work, you must be running on tensorflow version 1.15.2. Please install this tensorflow version before running this program again.\n\nTIP: You will need to build tensorflow 1.15.2 from source to use it.')
+        elif inss.lower() == 'n':
+            print('Please install the dependency with "pip install gpt_2_simple" before running this program again.')
+        else:
+            print('Invalid response.')
+try:
+    import pyttsx3
+except:
+    pass
+    inss = input('You are missing a required dependency. Would you like to install it now? (y/n): ')
+    if inss.lower() == 'y':
+        os.system('pip install pyttsx3')
+        import pyttsx3
+    elif inss.lower() == 'n':
+        print('Please install the dependency with "pip install pyttsx3" before running this program again.')
+    else:
+        print('Invalid response.')
 @contextmanager
 def suppress_stdout():
     with open(os.devnull, "w") as devnull:
@@ -27,11 +48,12 @@ def clearConsole():
         command = 'cls'
     os.system(command)
 clearConsole()
+engine = pyttsx3.init()
 directory_path = os.getcwd()
 if not os.path.exists(os.path.join(directory_path, 'novaSetup.txt')):
     print("Nova First Time Setup\n")
     print("Nova: Hello, my name is Nova and I am a chatbot that runs on GPT-2, nice to meet you!")
-    temp = input("Nova: Before we begin, you need to choose what version of GPT-2 to run. There are 2 options, small and large. Small uses less storage spcce but is worse at gneerating responses in conversations. Large uses over 1GB of space but is better at generating responses in conversations. Choose now (type 's' for small, 'l' for large): ")
+    temp = input("Nova: Before we begin, you need to choose what version of GPT-2 to run. There are 2 options, small, large and super large. Small uses less storage spcce but is worse at gneerating responses in conversations. Large uses over 1GB of space but is better at generating responses in conversations. Super Large uses lots of storage space but is the best at generating responses in conversations. Choose now (type 's' for small, 'l' for large and 'sl' for super large): ")
     if temp == 'l' or 'L':
         model_name = '355M'
         print('Nova: OK! Give me a second, this should only take a few minutes depending on your connection.')
@@ -50,6 +72,18 @@ if not os.path.exists(os.path.join(directory_path, 'novaSetup.txt')):
         stat = str(shutil.disk_usage("/")).split(",")[2].split("=")[1].replace(")","")
         avail = int(stat) / 1000000
         if avail < 600:
+            print("Nova: You do not have enough storage space for the files, shutting down...")
+            quit()
+        else:
+            with suppress_stdout():
+                gpt2.download_gpt2(model_name=model_name)
+            print('Nova: Files downloaded')
+    elif temp.lower() == 'sl':
+        model_name = '774M'
+        print('Nova: OK! Give me a second, this should only take a few minutes depending on your connection.')
+        stat = str(shutil.disk_usage("/")).split(",")[2].split("=")[1].replace(")","")
+        avail = int(stat) / 1000000
+        if avail < 3200:
             print("Nova: You do not have enough storage space for the files, shutting down...")
             quit()
         else:
@@ -85,7 +119,7 @@ if not os.path.exists(os.path.join(directory_path, 'humanInfo.txt')):
     print('Nova: Finally, which city/town do you live in?')
     human_city = input('Human: ')
     print("Nova: Great! Let's begin chatting!")
-    humanInfo = "User Information\nName:" + human_name + '\nAge: ' + human_age + '\nCity: ' + human_city + '\nPronouns: ' + human_pronouns
+    humanInfo = "Human Name: " + human_name + '\nHuman Age: ' + human_name + '\nHuman Pronouns: ' + human_pronouns + '\nHuman City: ' + human_city
     human = open('humanInfo.txt','w')
     human.write(humanInfo)
     human.close()
@@ -107,92 +141,100 @@ def generalConv():
     time.sleep(4)
     clearConsole()
     ongoing = True
-    print('Nova: So what are you interested in?')
     humanAnswer = input('Human: ')
-    conv = 'Nova Chatbot Conversation\nTopic: General Conversation\nHuman Info: ' + humanInfo + '\n\nNova: So what are you interested in?\nHuman: ' + humanAnswer + '\nNova:'
+    conv = 'Nova Chatbot Conversation\n\nNova is a chatbot that can have conversations with humans.\n\nConversation Topic: General Conversation\n' + humanInfo + '\nNova Name: Nova\nNova Pronouns: they/them\n\nConversation between Nova and a human:\nHuman: ' + humanAnswer + '\nNova:'
     while ongoing == True:
         try:
-            novaResp = gpt2.generate(sess, model_name=model_name, length=80, temperature=0.5, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
+            novaResp = gpt2.generate(sess, model_name=model_name, length=50, temperature=0.7, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
         except:
             pass
             print('An error occurred, sorry for the inconvenience, returing to main menu')
+            time.sleep(5)
             openMenu()
         print('Nova:' + novaResp)
-        conv = conv + novaResp
+        engine.say(novaResp)
+        engine.runAndWait()
+        conv = conv + novaResp + '\n'
         humanResp = input('Human: ')
         if humanResp == 'quit':
             print('Quitting conversation...')
             openMenu()
-        conv = conv + 'Human: ' + humanResp
+        conv = conv + 'Human: ' + humanResp + '\nNova:'
 def hometownConv():
     clearConsole()
     print('Enter "quit" to exit chat and return to menu.\n\nNOTE: Nova can take some time to generate answers based on the speed of the machine running Nova. I apologise if Nova takes a while to generate answers.')
     time.sleep(4)
     clearConsole()
     ongoing = True
-    print('Nova: So where did you grow up?')
     humanAnswer = input('Human: ')
-    conv = 'Nova Chatbot Conversation\nTopic: Humans Hometown\nHuman Info: ' + humanInfo + '\n\nNova: So where did you grow up?\nHuman: ' + humanAnswer + '\nNova:'
+    conv = 'Nova Chatbot Conversation\n\nNova is a chatbot that can have conversations with humans.\n\nConversation Topic: Humans Hometown\n' + humanInfo + '\nNova Name: Nova\nNova Pronouns: they/them\n\nConversation between Nova and a human:\nHuman: ' + humanAnswer + '\nNova:'
     while ongoing == True:
         try:
-            novaResp = gpt2.generate(sess, model_name=model_name, length=80, temperature=0.5, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
+            novaResp = gpt2.generate(sess, model_name=model_name, length=50, temperature=0.7, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
         except:
             pass
             print('An error occurred, sorry for the inconvenience, returing to main menu')
+            time.sleep(5)
             openMenu()
         print('Nova:' + novaResp)
-        conv = conv + novaResp
+        engine.say(novaResp)
+        engine.runAndWait()
+        conv = conv + novaResp + '\n'
         humanResp = input('Human: ')
         if humanResp == 'quit':
             print('Quitting conversation...')
             openMenu()
-        conv = conv + 'Human: ' + humanResp
+        conv = conv + 'Human: ' + humanResp + '\nNova:'
 def bookConv():
     clearConsole()
     print('Enter "quit" to exit chat and return to menu.\n\nNOTE: Nova can take some time to generate answers based on the speed of the machine running Nova. I apologise if Nova takes a while to generate answers.')
     time.sleep(4)
     clearConsole()
     ongoing = True
-    print('Nova: So whats your favourite book?')
     humanAnswer = input('Human: ')
-    conv = 'Nova Chatbot Conversation\nTopic: Books\nHuman Info: ' + humanInfo + '\n\nNova: So whats your favourite book?\nHuman: ' + humanAnswer + '\nNova:'
+    conv = 'Nova Chatbot Conversation\n\nNova is a chatbot that can have conversations with humans.\n\nConversation Topic: Books\n' + humanInfo + '\nNova Name: Nova\nNova Pronouns: they/them\n\nConversation between Nova and a human:\nHuman: ' + humanAnswer + '\nNova:'
     while ongoing == True:
         try:
-            novaResp = gpt2.generate(sess, model_name=model_name, length=80, temperature=0.5, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
+            novaResp = gpt2.generate(sess, model_name=model_name, length=50, temperature=0.7, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
         except:
             pass
             print('An error occurred, sorry for the inconvenience, returing to main menu')
+            time.sleep(5)
             openMenu()
         print('Nova:' + novaResp)
-        conv = conv + novaResp
+        engine.say(novaResp)
+        engine.runAndWait()
+        conv = conv + novaResp + '\n'
         humanResp = input('Human: ')
         if humanResp == 'quit':
             print('Quitting conversation...')
             openMenu()
-        conv = conv + 'Human: ' + humanResp
+        conv = conv + 'Human: ' + humanResp + '\nNova:'
 def jokeConv():
     clearConsole()
     print('Enter "quit" to exit chat and return to menu.\n\nNOTE: Nova can take some time to generate answers based on the speed of the machine running Nova. I apologise if Nova takes a while to generate answers.')
     time.sleep(4)
     clearConsole()
     ongoing = True
-    print('Nova: Do you wanna hear a joke?')
     humanAnswer = input('Human: ')
-    conv = 'Nova Chatbot Conversation\nTopic: Jokes\nHuman Info: ' + humanInfo + '\n\nNova: Do you wanna hear a joke?\nHuman: ' + humanAnswer + '\nNova:'
+    conv = 'Nova Chatbot Conversation\n\nNova is a chatbot that can have conversations with humans.\n\nConversation Topic: Jokes\n' + humanInfo + '\nNova Name: Nova\nNova Pronouns: they/them\n\nConversation between Nova and a human:\nHuman: ' + humanAnswer + '\nNova:'
     while ongoing == True:
         try:
-            novaResp = gpt2.generate(sess, model_name=model_name, length=80, temperature=0.5, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
+            novaResp = gpt2.generate(sess, model_name=model_name, length=50, temperature=0.7, prefix=conv, nsamples=1, batch_size=1, return_as_list=True)[0].replace(conv,'').split('\n')[0]
         except:
             pass
             print('An error occurred, sorry for the inconvenience, returing to main menu')
+            time.sleep(5)
             openMenu()
         print('Nova:' + novaResp)
-        conv = conv + novaResp
+        engine.say(novaResp)
+        engine.runAndWait()
+        conv = conv + novaResp + '\n'
         humanResp = input('Human: ')
         if humanResp == 'quit':
             print('Quitting conversation...')
             openMenu()
-        conv = conv + 'Human: ' + humanResp
+        conv = conv + 'Human: ' + humanResp + '\nNova:'
 def copyConv():
     clearConsole()
     print('Enter "quit" to exit chat and return to menu.')
@@ -205,6 +247,8 @@ def copyConv():
             print('Quitting conversation...')
             openMenu()
         print('Nova: ' + hum)
+        engine.say(hum)
+        engine.runAndWait()
 def openMenu():
     clearConsole()
     opt = menu()
@@ -222,4 +266,4 @@ def openMenu():
         endNova()
 openMenu()
 #shutil.rmtree(os.path.join("models", "124M")) ## for when convo is done
-# gpt2.generate(sess, model_name=model_name, length=50, temperature=0.5, prefix="Nova: ", nsamples=1, batch_size=1, return_as_list=True)[0]
+# gpt2.generate(sess, model_name=model_name, length=50, temperature=0.7, prefix="Nova: ", nsamples=1, batch_size=1, return_as_list=True)[0]
